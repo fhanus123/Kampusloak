@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #264653;
+  --color-nav: #264653;
+  --color-nav-sub: #2d6a4f;
+  --color-brand: #40916c;
+  --color-mint: #95d5b2;
+  --color-cta: #f4a261;
+  --color-gold: #e9c46a;
+  --color-page: #f1faee;
+}
+
+body {
+  @apply bg-page text-ink;
+}
