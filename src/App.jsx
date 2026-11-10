@@ -9,13 +9,12 @@ import Register from "./pages/Register";
 import Search from "./pages/Search";
 import ListingDetail from "./pages/ListingDetail";
 import SellListing from "./pages/SellListing";
+import Dashboard from "./pages/Dashboard";
+import EditListing from "./pages/EditListing";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Verification from "./pages/Verification";
 import Verifications from "./components/admin/Verifications";
-
-// Placeholder sementara
-const Dashboard = () => <div>Dashboard (terproteksi)</div>;
 
 const NotFound = () => (
   <div className="py-16 text-center text-xl font-bold">
@@ -44,6 +43,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/listings/new" element={<SellListing />} />
+          <Route path="/listings/:id/edit" element={<EditListing />} />
           <Route path="/verification" element={<Verification />} />
         </Route>
 
