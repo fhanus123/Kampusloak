@@ -11,3 +11,6 @@ export const CONDITION_LABELS = {
   good: 'Bagus',
   fair: 'Cukup',
 }
+
+export const whatsappLink = (phone, text) =>
+  `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
