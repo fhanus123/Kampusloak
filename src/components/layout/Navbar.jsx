@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   User,
-  HandCoins,
   ShoppingCart,
   MessageCircle,
   ChevronDown,
@@ -107,13 +106,7 @@ export default function Navbar({ categories }) {
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
-                <Link
-                  to="/offers"
-                  className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-page hover:text-brand"
-                >
-                  <HandCoins className="h-4 w-4" />
-                  Penawaran
-                </Link>
+
                 <Link
                   to="/verification"
                   className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-page hover:text-brand"
