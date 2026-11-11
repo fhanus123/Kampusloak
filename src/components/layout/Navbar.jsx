@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -11,12 +11,38 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useUnreadCount } from "../../hooks/useUnreadCount";
 
 export default function Navbar({ categories }) {
   const { user, profile, isAdmin, signOut } = useAuth();
+  const unread = useUnreadCount();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const closeOutside = (event) => {
+      const menu = userMenuRef.current;
+      if (menu?.open && !menu.contains(event.target)) menu.open = false;
+    };
+    const closeOnEscape = (event) => {
+      const menu = userMenuRef.current;
+      if (event.key === "Escape" && menu?.open) {
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("focusin", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("focusin", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -74,16 +100,29 @@ export default function Navbar({ categories }) {
           >
             <ShoppingCart className="h-5 w-5" />
           </button>
-          <button
-            type="button"
+          <Link
+            to={user ? "/chat" : "/login"}
             aria-label="Chat"
             title="Chat"
-            className="rounded-full p-2 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-mint"
+            className="relative rounded-full p-2 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-mint"
           >
             <MessageCircle className="h-5 w-5" />
-          </button>
+            {unread > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-ink">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </Link>
           {user ? (
-            <details className="group relative">
+            <details
+              ref={userMenuRef}
+              className="group relative"
+              onClick={(event) => {
+                if (event.target.closest("a, button")) {
+                  event.currentTarget.open = false;
+                }
+              }}
+            >
               <summary className="flex cursor-pointer list-none items-center gap-1 rounded-lg px-2 py-2 transition hover:bg-white/10 hover:text-mint [&::-webkit-details-marker]:hidden">
                 <User className="h-4 w-4 shrink-0" />
                 <span className="hidden max-w-24 truncate sm:inline">

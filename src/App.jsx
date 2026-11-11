@@ -15,6 +15,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Verification from "./pages/Verification";
 import Verifications from "./components/admin/Verifications";
+import Chat from "./pages/Chat";
+import ChatThread from "./components/chat/ChatThread";
+import EmptyState from "./components/ui/EmptyState";
 
 const NotFound = () => (
   <div className="py-16 text-center text-xl font-bold">
@@ -45,6 +48,18 @@ export default function App() {
           <Route path="/listings/new" element={<SellListing />} />
           <Route path="/listings/:id/edit" element={<EditListing />} />
           <Route path="/verification" element={<Verification />} />
+          <Route path="/chat" element={<Chat />}>
+            <Route
+              index
+              element={
+                <EmptyState
+                  title="Pilih percakapan"
+                  description="Pilih salah satu percakapan di sebelah kiri."
+                />
+              }
+            />
+            <Route path=":conversationId" element={<ChatThread />} />
+          </Route>
         </Route>
 
         <Route element={<AdminRoute />}>
