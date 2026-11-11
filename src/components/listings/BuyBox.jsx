@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabaseClient";
@@ -17,8 +17,54 @@ export default function BuyBox({ listing }) {
   const [error, setError] = useState("");
 
   const isOwner = user?.id === listing.seller_id;
+  const userId = user?.id;
+  const canNegotiate = Boolean(
+    userId && !isOwner && isVerified && listing.status === "approved",
+  );
+  const [conversation, setConversation] = useState(null);
+  const [lookupAttempt, setLookupAttempt] = useState(0);
+  const currentConversation =
+    conversation?.userId === userId &&
+    conversation?.listingId === listing.id &&
+    conversation?.attempt === lookupAttempt
+      ? conversation
+      : null;
+  const checkingConversation = canNegotiate && !currentConversation;
+
+  useEffect(() => {
+    if (!canNegotiate) return;
+    let ignore = false;
+
+    const loadConversation = async () => {
+      const { data, error: queryError } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("listing_id", listing.id)
+        .eq("buyer_id", userId)
+        .maybeSingle();
+
+      if (!ignore) {
+        setConversation({
+          userId,
+          listingId: listing.id,
+          attempt: lookupAttempt,
+          id: data?.id ?? null,
+          error: queryError ? "Gagal memeriksa percakapan. Coba lagi." : "",
+        });
+      }
+    };
+
+    loadConversation();
+    return () => {
+      ignore = true;
+    };
+  }, [userId, listing.id, canNegotiate, lookupAttempt]);
 
   const startChat = async () => {
+    if (currentConversation?.id) {
+      navigate(`/chat/${currentConversation.id}`);
+      return;
+    }
     setStarting(true);
     setError("");
     const { data, error: rpcError } = await supabase.rpc("start_conversation", {
@@ -95,14 +141,26 @@ export default function BuyBox({ listing }) {
         <Button
           variant="cta"
           className="w-full"
-          loading={starting}
-          onClick={startChat}
+          loading={starting || checkingConversation}
+          onClick={
+            currentConversation?.error
+              ? () => setLookupAttempt((n) => n + 1)
+              : startChat
+          }
         >
-          {starting ? "Membuka chat..." : "Ajukan Penawaran"}
+          {checkingConversation
+            ? "Memeriksa percakapan..."
+            : starting
+              ? "Membuka chat..."
+              : currentConversation?.error
+                ? "Coba lagi"
+                : currentConversation?.id
+                  ? "Lanjutkan negosiasi"
+                  : "Ajukan Penawaran"}
         </Button>
-        {error && (
+        {(currentConversation?.error || error) && (
           <p role="alert" className="text-xs text-red-600">
-            {error}
+            {currentConversation?.error || error}
           </p>
         )}
       </div>
