@@ -20,3 +20,11 @@ export const formatTime = (value) =>
 
 export const whatsappLink = (phone, text) =>
   `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+
+export const slugify = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");

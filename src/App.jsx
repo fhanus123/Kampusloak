@@ -18,6 +18,10 @@ import Verifications from "./components/admin/Verifications";
 import Chat from "./pages/Chat";
 import ChatThread from "./components/chat/ChatThread";
 import EmptyState from "./components/ui/EmptyState";
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminListings from "./pages/admin/AdminListings";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminCategories from "./pages/admin/AdminCategories";
 
 const NotFound = () => (
   <div className="py-16 text-center text-xl font-bold">
@@ -63,7 +67,12 @@ export default function App() {
         </Route>
 
         <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<Verifications />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Verifications />} />
+            <Route path="listings" element={<AdminListings />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="categories" element={<AdminCategories />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFound />} />

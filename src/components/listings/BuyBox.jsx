@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { formatRupiah } from "../../lib/format";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import ReportButton from "./ReportButton";
 
 const ctaClass =
   "block w-full rounded-lg bg-cta px-4 py-2.5 text-center text-sm font-semibold text-ink hover:brightness-95";
@@ -177,6 +178,7 @@ export default function BuyBox({ listing }) {
       <p className="border-t border-ink/10 pt-3 text-sm">
         Dijual oleh <span className="font-semibold">{listing.sellerName}</span>
       </p>
+      {user && !isOwner && <ReportButton listingId={listing.id} />}
     </aside>
   );
 }

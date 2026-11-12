@@ -124,6 +124,11 @@ export default function Dashboard() {
                     <Badge className={status.className}>{status.label}</Badge>
                     <span>{item.categories?.name}</span>
                   </div>
+                  {item.status === "rejected" && item.rejection_reason && (
+                    <p className="mt-1 text-xs text-red-700">
+                      Alasan ditolak: {item.rejection_reason}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
