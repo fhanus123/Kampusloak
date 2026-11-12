@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar({ categories }) {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -100,6 +101,7 @@ export default function Navbar({ categories }) {
           >
             <ShoppingCart className="h-5 w-5" />
           </button>
+          {user && <NotificationBell />}
           <Link
             to={user ? "/chat" : "/login"}
             aria-label="Chat"

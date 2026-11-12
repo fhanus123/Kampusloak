@@ -40,15 +40,26 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const signUp = ({ email, password, fullName, nim, phone }) =>
+  const signUp = ({ email, password, fullName, nim, phone, username }) =>
     supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, nim, phone } },
+      options: { data: { full_name: fullName, nim, phone, username } },
     });
 
-  const signIn = ({ email, password }) =>
-    supabase.auth.signInWithPassword({ email, password });
+  const signIn = async ({ identifier, password }) => {
+    let email = identifier;
+    if (!identifier.includes("@")) {
+      const { data } = await supabase.rpc("resolve_login_email", {
+        p_identifier: identifier,
+      });
+      if (!data) {
+        return { data: null, error: { message: "Invalid login credentials" } };
+      }
+      email = data;
+    }
+    return supabase.auth.signInWithPassword({ email, password });
+  };
 
   const signOut = () => supabase.auth.signOut();
 
