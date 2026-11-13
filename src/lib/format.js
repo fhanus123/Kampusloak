@@ -18,5 +18,21 @@ export const formatTime = (value) =>
     minute: "2-digit",
   });
 
+export const formatDateTime = (value) =>
+  new Date(value).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 export const whatsappLink = (phone, text) =>
   `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+
+export const slugify = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");

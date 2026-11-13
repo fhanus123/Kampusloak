@@ -26,7 +26,7 @@ export default function Register() {
     if (error) {
       const msg = error.message.toLowerCase();
       if (msg.includes("database error")) {
-        setServerError("NIM sudah terdaftar. Gunakan NIM milik Anda sendiri.");
+        setServerError("NIM atau username sudah terdaftar. Gunakan yang lain.");
       } else if (msg.includes("already registered")) {
         setServerError("Email sudah terdaftar. Silakan masuk.");
       } else {
@@ -53,6 +53,13 @@ export default function Register() {
         >
           Ke halaman masuk
         </Link>
+        <button
+          type="button"
+          onClick={() => setNeedsConfirm(false)}
+          className="mt-3 block w-full text-sm font-semibold text-nav-sub underline"
+        >
+          Daftar akun lain
+        </button>
       </div>
     );
   }
@@ -77,6 +84,14 @@ export default function Register() {
           inputMode="numeric"
           error={errors.nim?.message}
           {...register("nim")}
+        />
+        <FormField
+          id="username"
+          label="Username"
+          autoComplete="username"
+          placeholder="contoh: fhanus_"
+          error={errors.username?.message}
+          {...register("username")}
         />
         <FormField
           id="phone"

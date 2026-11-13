@@ -35,9 +35,9 @@ export default function Dashboard() {
     refetch();
   };
 
-  const markSold = (item) =>
+  const sellUnit = (item) =>
     run(item.id, () =>
-      supabase.from("listings").update({ status: "sold" }).eq("id", item.id),
+      supabase.rpc("sell_unit", { p_listing_id: item.id }),
     );
 
   const resubmit = (item) =>
@@ -123,13 +123,19 @@ export default function Dashboard() {
                   <div className="mt-1 flex items-center gap-2 text-xs text-ink/60">
                     <Badge className={status.className}>{status.label}</Badge>
                     <span>{item.categories?.name}</span>
+                    <span>{item.quantity} unit</span>
                   </div>
+                  {item.status === "rejected" && item.rejection_reason && (
+                    <p className="mt-1 text-xs text-red-700">
+                      Alasan ditolak: {item.rejection_reason}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {item.status === "approved" && (
-                    <Button loading={busy} onClick={() => markSold(item)}>
-                      Tandai terjual
+                    <Button loading={busy} onClick={() => sellUnit(item)}>
+                      {item.quantity > 1 ? "Terjual 1 unit" : "Tandai terjual"}
                     </Button>
                   )}
                   {item.status === "rejected" && (

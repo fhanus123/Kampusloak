@@ -52,12 +52,12 @@ export default function ConversationList() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p
-                    className={`truncate text-sm ${c.unread > 0 ? "font-bold" : "font-semibold"}`}
+                    className={`min-w-0 truncate text-sm ${c.unread > 0 ? "font-bold" : "font-semibold"}`}
                   >
                     {c.otherName}
                   </p>
                   {c.unread > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-cta px-1 text-xs font-bold">
+                    <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-cta px-1 text-xs font-bold">
                       {c.unread}
                     </span>
                   )}

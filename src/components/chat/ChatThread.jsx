@@ -96,12 +96,12 @@ function ThreadView({ conversationId }) {
   const canSend = listing?.status === "approved";
 
   return (
-    <div className="flex h-[calc(100vh-13rem)] min-h-[28rem] flex-col overflow-hidden rounded-xl bg-white shadow-sm">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white shadow-sm lg:rounded-xl">
       <header className="flex shrink-0 items-center gap-3 border-b border-ink/10 p-3">
         <Link
           to="/chat"
           aria-label="Kembali"
-          className="rounded-full p-1.5 hover:bg-mint/30 lg:hidden"
+          className="shrink-0 rounded-full p-1.5 hover:bg-mint/30 lg:hidden"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
@@ -122,7 +122,7 @@ function ThreadView({ conversationId }) {
           type="button"
           onClick={handleDeleteConversation}
           aria-label="Hapus percakapan"
-          className="rounded-full p-2 text-red-700 hover:bg-red-50"
+          className="shrink-0 rounded-full p-2 text-red-700 hover:bg-red-50"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -151,9 +151,11 @@ function ThreadView({ conversationId }) {
                 className={`group flex ${mine ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${mine ? "bg-nav-sub text-white" : "bg-white shadow-sm"}`}
+                  className={`min-w-0 max-w-[85%] rounded-2xl px-3 py-2 text-sm sm:max-w-[80%] ${mine ? "bg-nav-sub text-white" : "bg-white shadow-sm"}`}
                 >
-                  <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                  <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                    {m.body}
+                  </p>
                   <p
                     className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${mine ? "text-white/70" : "text-ink/50"}`}
                   >
@@ -178,7 +180,7 @@ function ThreadView({ conversationId }) {
       {canSend ? (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="shrink-0 border-t border-ink/10 p-3"
+          className="shrink-0 border-t border-ink/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
           noValidate
         >
           {(errors.body || actionError) && (
@@ -198,7 +200,7 @@ function ThreadView({ conversationId }) {
               type="submit"
               disabled={isSubmitting}
               aria-label="Kirim"
-              className="rounded-lg bg-cta px-4 text-ink hover:brightness-95 disabled:opacity-60"
+              className="shrink-0 rounded-lg bg-cta px-4 text-ink hover:brightness-95 disabled:opacity-60"
             >
               <Send className="h-5 w-5" />
             </button>

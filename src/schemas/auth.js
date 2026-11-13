@@ -25,6 +25,14 @@ export const registerSchema = z
       .string()
       .trim()
       .regex(/^\d{14}$/, "NIM harus 14 digit angka"),
+    username: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(
+        /^[a-z0-9_]{3,20}$/,
+        "Username 3-20 karakter: huruf, angka, atau garis bawah",
+      ),
     phone: phoneSchema,
     email: z.string().trim().email("Format email tidak valid"),
     password: z.string().min(8, "Password minimal 8 karakter"),
@@ -36,7 +44,7 @@ export const registerSchema = z
   });
 
 export const loginSchema = z.object({
-  email: z.string().trim().email("Format email tidak valid"),
+  identifier: z.string().trim().min(1, "Username atau email wajib diisi"),
   password: z.string().min(1, "Password wajib diisi"),
 });
 

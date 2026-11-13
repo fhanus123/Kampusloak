@@ -19,6 +19,7 @@ export default function Verifications() {
   const { profiles, loading, error, refetch } = useProfilesByStatus(status);
 
   const run = async (id, action) => {
+    if (busyId !== null) return;
     setBusyId(id);
     setActionError("");
     const { error: rpcError } = await action();
@@ -27,6 +28,7 @@ export default function Verifications() {
       setActionError(rpcError.message);
       return;
     }
+    window.dispatchEvent(new Event("admin:updated"));
     refetch();
   };
 
@@ -52,6 +54,7 @@ export default function Verifications() {
             key={tab.value}
             role="tab"
             aria-selected={status === tab.value}
+            disabled={busyId !== null}
             onClick={() => setStatus(tab.value)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold ${
               status === tab.value
@@ -85,10 +88,10 @@ export default function Verifications() {
         <div className="grid gap-4 lg:grid-cols-2">
           {profiles.map((p) => (
             <VerificationCard
-              key={p.id}
+              key={`${status}-${p.id}`}
               profile={p}
               status={status}
-              busy={busyId === p.id}
+              busy={busyId !== null}
               onReview={handleReview}
               onDelete={handleDelete}
             />

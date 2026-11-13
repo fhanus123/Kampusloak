@@ -13,6 +13,11 @@ export const listingSchema = z.object({
     .int("Harga harus bilangan bulat")
     .min(0, "Harga tidak boleh negatif")
     .max(1_000_000_000, "Harga terlalu besar"),
+  quantity: z.coerce
+    .number()
+    .int("Jumlah harus bilangan bulat")
+    .min(1, "Minimal 1 unit")
+    .max(99, "Maksimal 99 unit"),
   condition: z.enum(["new", "like_new", "good", "fair"]),
 });
 

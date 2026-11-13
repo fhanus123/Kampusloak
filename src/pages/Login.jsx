@@ -36,11 +36,11 @@ export default function Login() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <FormField
-          id="email"
-          label="Email"
-          type="email"
-          error={errors.email?.message}
-          {...register("email")}
+          id="identifier"
+          label="Username atau email"
+          autoComplete="username"
+          error={errors.identifier?.message}
+          {...register("identifier")}
         />
         <FormField
           id="password"

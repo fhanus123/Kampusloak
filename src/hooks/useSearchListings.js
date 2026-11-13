@@ -24,7 +24,7 @@ export function useSearchListings(searchString) {
       const p = new URLSearchParams(searchString)
       let query = supabase
         .from('listings')
-        .select('id, title, price, condition, image_urls, seller_id, categories!inner(name, slug)')
+        .select('id, title, price, quantity, condition, image_urls, seller_id, categories!inner(name, slug)')
         .eq('status', 'approved')
 
       const q = p.get('q')?.replace(/[%,()]/g, ' ').trim()

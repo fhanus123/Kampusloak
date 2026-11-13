@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   User,
-  ShoppingCart,
+  Heart,
   MessageCircle,
   ChevronDown,
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar({ categories }) {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -53,9 +54,12 @@ export default function Navbar({ categories }) {
   };
 
   return (
-    <header className="bg-nav text-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-4 py-3 md:grid-cols-[minmax(150px,0.55fr)_minmax(280px,2fr)_auto]">
-        <Link to="/" className="text-xl font-extrabold tracking-tight">
+    <header className="shrink-0 bg-nav text-white">
+      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-3 sm:gap-x-4 sm:px-4 md:grid-cols-[minmax(150px,0.55fr)_minmax(280px,2fr)_auto]">
+        <Link
+          to="/"
+          className="min-w-0 text-base font-extrabold tracking-tight sm:text-xl"
+        >
           Kampus<span className="text-cta">Loak</span>
         </Link>
 
@@ -91,15 +95,16 @@ export default function Navbar({ categories }) {
           </button>
         </form>
 
-        <nav className="justify-self-end flex items-center gap-2 text-sm sm:gap-3">
-          <button
-            type="button"
-            aria-label="Keranjang"
-            title="Barang yang ditandai"
+        <nav className="justify-self-end flex items-center gap-1 text-sm sm:gap-3">
+          <Link
+            to={user ? "/saved" : "/login"}
+            aria-label="Barang tersimpan"
+            title="Barang tersimpan"
             className="rounded-full p-2 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-mint"
           >
-            <ShoppingCart className="h-5 w-5" />
-          </button>
+            <Heart className="h-5 w-5" />
+          </Link>
+          {user && <NotificationBell />}
           <Link
             to={user ? "/chat" : "/login"}
             aria-label="Chat"
