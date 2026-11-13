@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Search,
   User,
@@ -18,8 +18,9 @@ export default function Navbar({ categories }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const unread = useUnreadCount();
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const category = searchParams.get("category") ?? "";
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -48,8 +49,23 @@ export default function Navbar({ categories }) {
   const handleSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
+    const query = new FormData(e.currentTarget).get("q")?.toString().trim();
+    if (query) params.set("q", query);
     if (category) params.set("category", category);
+    navigate(`/search?${params.toString()}`);
+  };
+
+  const handleCategoryChange = (e) => {
+    const selected = e.target.value;
+    const params = new URLSearchParams(
+      location.pathname === "/search" ? location.search : "",
+    );
+    const query = new FormData(e.currentTarget.form).get("q")?.toString().trim();
+    if (query) params.set("q", query);
+    else params.delete("q");
+    if (selected) params.set("category", selected);
+    else params.delete("category");
+
     navigate(`/search?${params.toString()}`);
   };
 
@@ -64,12 +80,13 @@ export default function Navbar({ categories }) {
         </Link>
 
         <form
+          key={`${location.pathname}${location.search}`}
           onSubmit={handleSearch}
           className="col-span-2 order-3 flex w-full overflow-hidden rounded-lg bg-white md:col-span-1 md:order-0"
         >
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={handleCategoryChange}
             aria-label="Kategori"
             className="max-w-36 border-r border-ink/10 bg-page px-2 text-sm text-ink outline-none"
           >
@@ -81,8 +98,8 @@ export default function Navbar({ categories }) {
             ))}
           </select>
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            name="q"
+            defaultValue={searchParams.get("q") ?? ""}
             placeholder="Cari buku, laptop, perabot kos..."
             className="min-w-0 flex-1 px-3 py-2.5 text-sm text-ink outline-none"
           />

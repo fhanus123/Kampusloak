@@ -26,7 +26,13 @@ export default function Search() {
     <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
       <aside className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
         {/* key: form harga ikut ter-reset saat filter dihapus */}
-        <FilterSidebar key={params.toString()} categories={categories} params={params} setParams={setParams} />
+        <FilterSidebar
+          key={params.toString()}
+          categories={categories}
+          params={params}
+          setParams={setParams}
+          onApply={() => setShowFilters(false)}
+        />
       </aside>
 
       <section>

@@ -2,7 +2,12 @@ import { useState } from 'react'
 import Button from '../ui/Button'
 import { CONDITION_LABELS } from '../../lib/format'
 
-export default function FilterSidebar({ categories, params, setParams }) {
+export default function FilterSidebar({
+  categories,
+  params,
+  setParams,
+  onApply,
+}) {
   const [min, setMin] = useState(params.get('min') ?? '')
   const [max, setMax] = useState(params.get('max') ?? '')
 
@@ -37,6 +42,7 @@ export default function FilterSidebar({ categories, params, setParams }) {
       low ? next.set('min', low) : next.delete('min')
       high ? next.set('max', high) : next.delete('max')
     })
+    onApply?.()
   }
 
   const hasFilter = [...params.keys()].some((k) => k !== 'q' && k !== 'sort')
