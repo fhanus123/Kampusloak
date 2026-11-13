@@ -41,10 +41,12 @@ export default function VerificationCard({
   };
 
   const submitReject = () => {
+    if (busy) return;
     if (reason.trim().length < 5) {
       setReasonError("Alasan minimal 5 karakter");
       return;
     }
+    setReasonError("");
     onReview(id, "rejected", reason.trim());
   };
 
@@ -114,6 +116,7 @@ export default function VerificationCard({
             id={`reason-${id}`}
             rows={2}
             value={reason}
+            disabled={busy}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Contoh: NIM pada KTM tidak terbaca jelas"
             className="w-full rounded-lg border border-ink/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
@@ -125,7 +128,7 @@ export default function VerificationCard({
       )}
 
       <div className="flex flex-wrap gap-2">
-        {status !== "verified" && (
+        {status !== "verified" && !rejecting && (
           <Button loading={busy} onClick={() => onReview(id, "verified")}>
             Setujui
           </Button>
@@ -134,7 +137,11 @@ export default function VerificationCard({
           <Button
             variant="outline"
             loading={busy}
-            onClick={() => setRejecting(true)}
+            onClick={() => {
+              setRejecting(true);
+              setReason("");
+              setReasonError("");
+            }}
           >
             Tolak
           </Button>
@@ -146,8 +153,10 @@ export default function VerificationCard({
             </Button>
             <Button
               variant="outline"
+              disabled={busy}
               onClick={() => {
                 setRejecting(false);
+                setReason("");
                 setReasonError("");
               }}
             >
@@ -155,19 +164,21 @@ export default function VerificationCard({
             </Button>
           </>
         )}
-        <Button
-          variant="outline"
-          loading={busy}
-          className="ml-auto text-red-700"
-          onClick={() => {
-            if (
-              window.confirm(`Hapus akun ${full_name} beserta semua datanya?`)
-            )
-              onDelete(id);
-          }}
-        >
-          Hapus akun
-        </Button>
+        {!rejecting && (
+          <Button
+            variant="outline"
+            loading={busy}
+            className="ml-auto text-red-700"
+            onClick={() => {
+              if (
+                window.confirm(`Hapus akun ${full_name} beserta semua datanya?`)
+              )
+                onDelete(id);
+            }}
+          >
+            Hapus akun
+          </Button>
+        )}
       </div>
     </article>
   );

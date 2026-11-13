@@ -53,6 +53,13 @@ export default function Register() {
         >
           Ke halaman masuk
         </Link>
+        <button
+          type="button"
+          onClick={() => setNeedsConfirm(false)}
+          className="mt-3 block w-full text-sm font-semibold text-nav-sub underline"
+        >
+          Daftar akun lain
+        </button>
       </div>
     );
   }
