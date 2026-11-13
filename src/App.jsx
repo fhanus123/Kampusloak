@@ -22,6 +22,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import AdminListings from "./pages/admin/AdminListings";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminCategories from "./pages/admin/AdminCategories";
+import Saved from "./pages/Saved";
 
 const NotFound = () => (
   <div className="py-16 text-center text-xl font-bold">
@@ -49,6 +50,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/saved" element={<Saved />} />
           <Route path="/listings/new" element={<SellListing />} />
           <Route path="/listings/:id/edit" element={<EditListing />} />
           <Route path="/verification" element={<Verification />} />

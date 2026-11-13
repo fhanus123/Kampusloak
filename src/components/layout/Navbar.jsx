@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   User,
-  ShoppingCart,
+  Heart,
   MessageCircle,
   ChevronDown,
   LayoutDashboard,
@@ -96,14 +96,14 @@ export default function Navbar({ categories }) {
         </form>
 
         <nav className="justify-self-end flex items-center gap-1 text-sm sm:gap-3">
-          <button
-            type="button"
-            aria-label="Keranjang"
-            title="Barang yang ditandai"
+          <Link
+            to={user ? "/saved" : "/login"}
+            aria-label="Barang tersimpan"
+            title="Barang tersimpan"
             className="rounded-full p-2 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-mint"
           >
-            <ShoppingCart className="h-5 w-5" />
-          </button>
+            <Heart className="h-5 w-5" />
+          </Link>
           {user && <NotificationBell />}
           <Link
             to={user ? "/chat" : "/login"}

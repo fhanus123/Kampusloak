@@ -20,7 +20,7 @@ export function useMyListings() {
       const { data, error: queryError } = await supabase
         .from("listings")
         .select(
-          "id, title, price, image_urls, status, rejection_reason, created_at, categories(name)",
+          "id, title, price, quantity, image_urls, status, rejection_reason, created_at, categories(name)",
         )
         .eq("seller_id", userId)
         .order("created_at", { ascending: false });

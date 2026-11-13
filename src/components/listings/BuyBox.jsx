@@ -6,6 +6,7 @@ import { formatRupiah } from "../../lib/format";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import ReportButton from "./ReportButton";
+import SaveButton from "./SaveButton";
 
 const ctaClass =
   "block w-full rounded-lg bg-cta px-4 py-2.5 text-center text-sm font-semibold text-ink hover:brightness-95";
@@ -171,10 +172,22 @@ export default function BuyBox({ listing }) {
   return (
     <aside className="space-y-4 rounded-xl bg-white p-5 shadow-sm">
       <p className="text-3xl font-bold">{formatRupiah(listing.price)}</p>
+      {listing.status === "approved" && (
+        <p
+          className={`text-sm font-semibold ${listing.quantity === 1 ? "text-red-700" : "text-nav-sub"}`}
+        >
+          {listing.quantity === 1
+            ? "Tersisa 1 unit"
+            : `Tersedia ${listing.quantity} unit`}
+        </p>
+      )}
       <p className="text-sm text-ink/70">
         Harga bisa dinego lewat chat dengan penjual.
       </p>
       {renderAction()}
+      {!isOwner && listing.status === "approved" && (
+        <SaveButton listingId={listing.id} />
+      )}
       <p className="border-t border-ink/10 pt-3 text-sm">
         Dijual oleh <span className="font-semibold">{listing.sellerName}</span>
       </p>

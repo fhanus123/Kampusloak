@@ -46,6 +46,7 @@ export default function ListingForm({ listing }) {
       description: listing?.description ?? "",
       categoryId: listing?.category_id ?? "",
       price: listing?.price ?? "",
+      quantity: listing?.quantity ?? 1,
       condition: listing?.condition ?? "good",
     },
   });
@@ -76,6 +77,7 @@ export default function ListingForm({ listing }) {
     description,
     categoryId,
     price,
+    quantity,
     condition,
   }) => {
     setServerError("");
@@ -92,6 +94,7 @@ export default function ListingForm({ listing }) {
         description: description || null,
         category_id: categoryId,
         price,
+        quantity,
         condition,
         image_urls: [...keptUrls, ...uploaded],
       };
@@ -186,6 +189,16 @@ export default function ListingForm({ listing }) {
         inputMode="numeric"
         error={errors.price?.message}
         {...register("price")}
+      />
+
+      <FormField
+        id="quantity"
+        label="Jumlah unit yang dijual"
+        type="number"
+        inputMode="numeric"
+        min="1"
+        error={errors.quantity?.message}
+        {...register("quantity")}
       />
 
       <div>

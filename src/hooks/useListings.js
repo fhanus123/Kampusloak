@@ -17,7 +17,7 @@ export function useListings({ limit = 20 } = {}) {
 
       const { data, error: queryError } = await supabase
         .from('listings')
-        .select('id, title, price, condition, image_urls, seller_id, categories(name, slug)')
+        .select('id, title, price, quantity, condition, image_urls, seller_id, categories(name, slug)')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(limit)
