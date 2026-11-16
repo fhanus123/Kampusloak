@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
@@ -12,9 +13,11 @@ export default function VerificationCard({
 }) {
   const [proofUrl, setProofUrl] = useState("");
   const [proofError, setProofError] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
+  const proofDialogRef = useRef(null);
 
   const {
     id,
@@ -28,6 +31,11 @@ export default function VerificationCard({
   } = profile;
   const isPdf = proof_url?.toLowerCase().endsWith(".pdf");
 
+  useEffect(() => {
+    const dialog = proofDialogRef.current;
+    if (previewOpen && dialog && !dialog.open) dialog.showModal();
+  }, [previewOpen]);
+
   const showProof = async () => {
     setProofError("");
     const { data, error } = await supabase.storage
@@ -38,6 +46,7 @@ export default function VerificationCard({
       return;
     }
     setProofUrl(data.signedUrl);
+    if (!isPdf) setPreviewOpen(true);
   };
 
   const submitReject = () => {
@@ -76,11 +85,11 @@ export default function VerificationCard({
 
       {proof_url ? (
         <div>
-          {!proofUrl ? (
+          {!proofUrl || !isPdf ? (
             <Button variant="outline" onClick={showProof}>
               Lihat bukti
             </Button>
-          ) : isPdf ? (
+          ) : (
             <a
               href={proofUrl}
               target="_blank"
@@ -89,12 +98,6 @@ export default function VerificationCard({
             >
               Buka PDF bukti
             </a>
-          ) : (
-            <img
-              src={proofUrl}
-              alt={`Bukti ${full_name}`}
-              className="max-h-72 rounded-lg border border-ink/10"
-            />
           )}
           {proofError && (
             <p className="mt-1 text-xs text-red-600">{proofError}</p>
@@ -102,6 +105,39 @@ export default function VerificationCard({
         </div>
       ) : (
         <p className="text-sm text-ink/60">Belum mengunggah bukti.</p>
+      )}
+
+      {proofUrl && !isPdf && (
+        <dialog
+          ref={proofDialogRef}
+          aria-labelledby={`proof-title-${id}`}
+          onClose={() => setPreviewOpen(false)}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              proofDialogRef.current?.close();
+            }
+          }}
+          className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-4xl overflow-hidden rounded-xl border border-white/10 bg-ink p-3 text-white shadow-xl backdrop:bg-black/70 sm:p-5"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <h2 id={`proof-title-${id}`} className="font-semibold">
+              Bukti verifikasi - {full_name}
+            </h2>
+            <button
+              type="button"
+              aria-label="Tutup pratinjau bukti"
+              onClick={() => proofDialogRef.current?.close()}
+              className="shrink-0 cursor-pointer rounded-lg p-2 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <X aria-hidden="true" className="h-5 w-5" />
+            </button>
+          </div>
+          <img
+            src={proofUrl}
+            alt={`Bukti verifikasi ${full_name}`}
+            className="mx-auto mt-3 max-h-[calc(90dvh-5.5rem)] max-w-full object-contain"
+          />
+        </dialog>
       )}
 
       {rejecting && (

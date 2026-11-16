@@ -1,9 +1,9 @@
 import { supabase } from './supabaseClient'
 
 export async function fetchNames(ids = []) {
-  const unique = [...new Set(ids)]
+  const unique = [...new Set(ids)].filter(Boolean)
   if (unique.length === 0) return {}
-  const { data } = await supabase.from('public_profiles').select('id, full_name').in('id', unique)
+  const { data } = await supabase.rpc('get_public_names', { p_ids: unique })
   return Object.fromEntries((data ?? []).map((p) => [p.id, p.full_name]))
 }
 
