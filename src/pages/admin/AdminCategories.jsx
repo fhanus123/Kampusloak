@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { categorySchema } from "../../schemas/category";
 import { supabase } from "../../lib/supabaseClient";
+import { watchRealtime } from "../../lib/watchRealtime";
 import { slugify } from "../../lib/format";
 import Button from "../../components/ui/Button";
 import FormField from "../../components/ui/FormField";
@@ -50,8 +51,14 @@ export default function AdminCategories() {
     };
 
     fetchCategories();
+    const stopWatching = watchRealtime(
+      "admin-categories",
+      [{ table: "categories" }],
+      fetchCategories,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [attempt]);
 

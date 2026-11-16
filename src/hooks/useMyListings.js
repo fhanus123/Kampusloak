@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useMyListings() {
   const { user } = useAuth();
@@ -36,8 +37,14 @@ export function useMyListings() {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `my-listings:${userId}`,
+      [{ table: "listings" }, { table: "categories" }],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [userId, attempt]);
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { withSellerNames } from "../lib/sellers";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useSavedListings() {
   const { user } = useAuth();
@@ -65,8 +66,18 @@ export function useSavedListings() {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `saved-listings:${userId}`,
+      [
+        { table: "favorites", filter: `user_id=eq.${userId}` },
+        { table: "listings" },
+        { table: "categories" },
+      ],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [userId, attempt]);
 

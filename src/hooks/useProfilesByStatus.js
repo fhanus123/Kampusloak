@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useProfilesByStatus(status) {
   const [result, setResult] = useState(null);
@@ -31,8 +32,14 @@ export function useProfilesByStatus(status) {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `admin-profiles:${status}`,
+      [{ table: "profiles" }],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [status, attempt]);
 

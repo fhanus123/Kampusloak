@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useFavorite(listingId) {
   const { user } = useAuth();
@@ -15,20 +16,37 @@ export function useFavorite(listingId) {
     let ignore = false;
 
     const load = async () => {
-      const { data } = await supabase
+      const { data, error: queryError } = await supabase
         .from("favorites")
         .select("listing_id")
         .eq("user_id", userId)
         .eq("listing_id", listingId)
         .maybeSingle();
       if (ignore) return;
+      if (queryError) {
+        setError("Gagal memeriksa barang tersimpan.");
+        setLoading(false);
+        return;
+      }
+      setError("");
       setSaved(Boolean(data));
       setLoading(false);
     };
     load();
 
+    const stopWatching = watchRealtime(
+      `favorite:${userId}:${listingId}`,
+      [
+        {
+          table: "favorites",
+          filter: `user_id=eq.${userId}`,
+        },
+      ],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [userId, listingId]);
 

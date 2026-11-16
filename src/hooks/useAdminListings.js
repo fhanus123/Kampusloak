@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { withSellerNames } from "../lib/sellers";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useAdminListings(status) {
   const [result, setResult] = useState(null);
@@ -33,8 +34,14 @@ export function useAdminListings(status) {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `admin-listings:${status}`,
+      [{ table: "listings" }, { table: "categories" }],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [status, attempt]);
 

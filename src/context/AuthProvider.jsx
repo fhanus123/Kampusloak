@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { watchRealtime } from "../lib/watchRealtime";
 import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }) {
@@ -39,6 +40,16 @@ export function AuthProvider({ children }) {
 
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
+
+  useEffect(() => {
+    const userId = session?.user.id;
+    if (!userId) return;
+    return watchRealtime(
+      `profile:${userId}`,
+      [{ table: "profiles", filter: `id=eq.${userId}` }],
+      () => fetchProfile(userId),
+    );
+  }, [session?.user.id, fetchProfile]);
 
   const signUp = ({ email, password, fullName, nim, phone, username }) =>
     supabase.auth.signUp({

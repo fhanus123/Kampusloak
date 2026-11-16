@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useUnreadCount() {
   const { user } = useAuth();
@@ -25,20 +26,16 @@ export function useUnreadCount() {
     };
     load();
     window.addEventListener("chat:read", load);
-
-    const channel = supabase
-      .channel(`unread:${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        load,
-      )
-      .subscribe();
+    const stopWatching = watchRealtime(
+      `unread:${userId}`,
+      [{ table: "messages" }],
+      load,
+    );
 
     return () => {
       ignore = true;
       window.removeEventListener("chat:read", load);
-      supabase.removeChannel(channel);
+      stopWatching();
     };
   }, [userId]);
 

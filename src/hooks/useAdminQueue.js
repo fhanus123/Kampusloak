@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useAdminQueue() {
   const { user, isAdmin } = useAuth();
@@ -79,24 +80,18 @@ export function useAdminQueue() {
 
     load();
     window.addEventListener("admin:updated", load);
-    window.addEventListener("focus", load);
     // Tetap segar jika Realtime belum diaktifkan untuk tabel moderasi.
     const timer = window.setInterval(load, 60000);
-    const channel = supabase.channel(`admin-queue:${userId}`);
-    for (const table of ["profiles", "listings", "reports"]) {
-      channel.on(
-        "postgres_changes",
-        { event: "*", schema: "public", table },
-        load,
-      );
-    }
-    channel.subscribe();
+    const stopWatching = watchRealtime(
+      `admin-queue:${userId}`,
+      [{ table: "profiles" }, { table: "listings" }, { table: "reports" }],
+      load,
+    );
     return () => {
       ignore = true;
       window.clearInterval(timer);
       window.removeEventListener("admin:updated", load);
-      window.removeEventListener("focus", load);
-      supabase.removeChannel(channel);
+      stopWatching();
     };
   }, [userId, isAdmin, attempt]);
 

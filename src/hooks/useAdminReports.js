@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { fetchNames } from "../lib/sellers";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useAdminReports(status) {
   const [result, setResult] = useState(null);
@@ -38,8 +39,14 @@ export function useAdminReports(status) {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `admin-reports:${status}`,
+      [{ table: "reports" }, { table: "listings" }],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [status, attempt]);
 

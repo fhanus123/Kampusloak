@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { fetchNames } from "../lib/sellers";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 const LISTING_FIELDS = "listings(id, title, price, image_urls, status)";
 
@@ -71,23 +72,15 @@ export function useConversations() {
 
     load();
     window.addEventListener("chat:read", load);
-    const channel = supabase
-      .channel(`chat-list:${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        load,
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        load,
-      )
-      .subscribe();
+    const stopWatching = watchRealtime(
+      `chat-list:${userId}`,
+      [{ table: "conversations" }, { table: "messages" }],
+      load,
+    );
     return () => {
       ignore = true;
       window.removeEventListener("chat:read", load);
-      supabase.removeChannel(channel);
+      stopWatching();
     };
   }, [userId, attempt]);
 
@@ -149,8 +142,14 @@ export function useConversation(id) {
     };
 
     load();
+    const stopWatching = watchRealtime(
+      `conversation:${id}`,
+      [{ table: "conversations", filter: `id=eq.${id}` }, { table: "listings" }],
+      load,
+    );
     return () => {
       ignore = true;
+      stopWatching();
     };
   }, [id, user.id, attempt]);
 
@@ -212,28 +211,21 @@ export function useMessages(conversationId) {
     };
     load();
 
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        "postgres_changes",
+    const stopWatching = watchRealtime(
+      `messages:${conversationId}`,
+      [
         {
-          event: "INSERT",
-          schema: "public",
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
+          event: "INSERT",
         },
-        ({ new: msg }) => {
-          setMessages((prev) =>
-            prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
-          );
-          if (msg.sender_id !== user.id) markRead();
-        },
-      )
-      .subscribe();
+      ],
+      load,
+    );
 
     return () => {
       ignore = true;
-      supabase.removeChannel(channel);
+      stopWatching();
     };
   }, [conversationId, user.id, attempt]);
 

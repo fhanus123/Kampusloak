@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Flag } from "lucide-react";
 import { reportSchema } from "../../schemas/report";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../hooks/useAuth";
+import { watchRealtime } from "../../lib/watchRealtime";
 import Button from "../ui/Button";
 
 export default function ReportButton({ listingId }) {
   const { user } = useAuth();
+  const userId = user?.id;
   const [open, setOpen] = useState(false);
-  const [done, setDone] = useState(false);
+  const [reportStatus, setReportStatus] = useState(null);
+  const [checking, setChecking] = useState(true);
+  const [lookupError, setLookupError] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const [serverError, setServerError] = useState("");
 
   const {
@@ -23,13 +28,40 @@ export default function ReportButton({ listingId }) {
     defaultValues: { reason: "" },
   });
 
+  useEffect(() => {
+    if (!userId) return;
+    let ignore = false;
+
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("reports")
+        .select("status")
+        .eq("listing_id", listingId)
+        .eq("reporter_id", userId)
+        .maybeSingle();
+      if (ignore) return;
+      setChecking(false);
+      setLookupError(error ? "Gagal memeriksa status laporan." : "");
+      if (!error) setReportStatus(data?.status ?? null);
+    };
+
+    load();
+    const stopWatching = watchRealtime(
+      `listing-report:${userId}:${listingId}`,
+      [{ table: "reports", filter: `reporter_id=eq.${userId}` }],
+      load,
+    );
+    return () => {
+      ignore = true;
+      stopWatching();
+    };
+  }, [userId, listingId, attempt]);
+
   const onSubmit = async ({ reason }) => {
     setServerError("");
     const { error } = await supabase
       .from("reports")
-      .insert({ listing_id: listingId, reporter_id: user.id, reason })
-      .select()
-      .single();
+      .insert({ listing_id: listingId, reporter_id: userId, reason });
 
     if (error) {
       setServerError(
@@ -40,13 +72,49 @@ export default function ReportButton({ listingId }) {
       return;
     }
     reset();
-    setDone(true);
+    setReportStatus("open");
   };
 
-  if (done) {
+  const statusMessages = {
+    open: "Laporan terkirim. Admin akan meninjaunya.",
+    reviewed: "Laporan ini sudah ditindak oleh admin.",
+    dismissed: "Laporan ini sudah ditinjau oleh admin.",
+  };
+
+  if (!userId) return null;
+
+  if (checking) {
+    return (
+      <p role="status" className="text-sm text-ink/60">
+        Memeriksa status laporan...
+      </p>
+    );
+  }
+
+  if (lookupError) {
+    return (
+      <div>
+        <p role="alert" className="text-sm text-red-700">
+          {lookupError}
+        </p>
+        <Button
+          variant="outline"
+          className="mt-1"
+          onClick={() => {
+            setChecking(true);
+            setAttempt((value) => value + 1);
+          }}
+        >
+          Coba lagi
+        </Button>
+      </div>
+    );
+  }
+
+  if (reportStatus) {
     return (
       <p className="rounded-lg bg-mint/40 p-3 text-sm">
-        Laporan terkirim. Admin akan meninjaunya.
+        {statusMessages[reportStatus] ?? "Laporan Anda sudah tercatat."}
       </p>
     );
   }

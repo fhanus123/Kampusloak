@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./useAuth";
+import { watchRealtime } from "../lib/watchRealtime";
 
 export function useNotifications() {
   const { user } = useAuth();
@@ -36,22 +37,14 @@ export function useNotifications() {
     };
 
     load();
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        load,
-      )
-      .subscribe();
+    const stopWatching = watchRealtime(
+      `notifications:${userId}`,
+      [{ table: "notifications", filter: `user_id=eq.${userId}` }],
+      load,
+    );
     return () => {
       ignore = true;
-      supabase.removeChannel(channel);
+      stopWatching();
     };
   }, [userId, attempt]);
 

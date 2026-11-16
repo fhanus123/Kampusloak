@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withSellerNames } from '../lib/sellers'
+import { watchRealtime } from '../lib/watchRealtime'
 
 const SORTS = {
   newest: { column: 'created_at', ascending: false },
@@ -16,9 +17,12 @@ export function useSearchListings(searchString) {
 
   useEffect(() => {
     let ignore = false
+    let hasLoaded = false
+    let request = 0
 
     const load = async () => {
-      setLoading(true)
+      const currentRequest = ++request
+      if (!hasLoaded) setLoading(true)
       setError('')
 
       const p = new URLSearchParams(searchString)
@@ -46,21 +50,31 @@ export function useSearchListings(searchString) {
         .order(sort.column, { ascending: sort.ascending })
         .limit(40)
 
-      if (ignore) return
+      if (ignore || currentRequest !== request) return
       if (queryError) {
         setError('Gagal memuat hasil pencarian.')
         setLoading(false)
+        hasLoaded = true
         return
       }
 
       const result = await withSellerNames(data)
-      if (ignore) return
+      if (ignore || currentRequest !== request) return
       setListings(result)
       setLoading(false)
+      hasLoaded = true
     }
 
     load()
-    return () => { ignore = true }
+    const stopWatching = watchRealtime(
+      'search:listings',
+      [{ table: 'listings' }, { table: 'categories' }],
+      load,
+    )
+    return () => {
+      ignore = true
+      stopWatching()
+    }
   }, [searchString, attempt])
 
   return { listings, loading, error, refetch: () => setAttempt((n) => n + 1) }
