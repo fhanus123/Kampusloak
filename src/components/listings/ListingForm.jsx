@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
@@ -8,7 +8,6 @@ import { supabase } from "../../lib/supabaseClient";
 import { uploadListingImages, removeListingImages } from "../../lib/storage";
 import { CONDITION_LABELS } from "../../lib/format";
 import { useAuth } from "../../hooks/useAuth";
-import { useCategories } from "../../hooks/useCategories";
 import Button from "../ui/Button";
 import FormField from "../ui/FormField";
 
@@ -19,7 +18,7 @@ export default function ListingForm({ listing }) {
   const isEdit = Boolean(listing);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const categories = useCategories();
+  const { categories } = useOutletContext();
 
   const [keptUrls, setKeptUrls] = useState(listing?.image_urls ?? []);
   const [newFiles, setNewFiles] = useState([]);

@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
 import ListingDetail from "./pages/ListingDetail";
+import UserProfile from "./pages/UserProfile";
 import SellListing from "./pages/SellListing";
 import Dashboard from "./pages/Dashboard";
 import EditListing from "./pages/EditListing";
@@ -47,6 +48,7 @@ export default function App() {
         {/* Rute baru */}
         <Route path="/search" element={<Search />} />
         <Route path="/listings/:id" element={<ListingDetail />} />
+        <Route path="/users/:id" element={<UserProfile />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />

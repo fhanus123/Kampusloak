@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { formatRupiah, formatTime } from "../../lib/format";
 import { useAuth } from "../../hooks/useAuth";
 import { useConversation, useMessages } from "../../hooks/useChat";
+import TransactionPanel from "./TransactionPanel";
 import Spinner from "../ui/Spinner";
 import ErrorState from "../ui/ErrorState";
 import EmptyState from "../ui/EmptyState";
@@ -127,6 +128,15 @@ function ThreadView({ conversationId }) {
           <Trash2 className="h-4 w-4" />
         </button>
       </header>
+
+      {listing && (
+        <TransactionPanel
+          listing={listing}
+          buyerId={conversation.buyer_id}
+          sellerId={conversation.seller_id}
+          otherName={otherName}
+        />
+      )}
 
       <div
         ref={messagesRef}

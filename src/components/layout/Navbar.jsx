@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
   LogOut,
+  Star,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
@@ -156,10 +157,20 @@ export default function Navbar({ categories }) {
               <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-ink/10 bg-white py-2 text-ink shadow-xl">
                 <div className="border-b border-ink/10 px-4 pb-2 mb-1">
                   <p className="text-xs text-ink/55">Masuk sebagai</p>
-                  <p className="truncate font-bold">
+                  <Link
+                    to={`/users/${user.id}`}
+                    className="block truncate font-bold hover:text-brand"
+                  >
                     {profile?.full_name ?? user.email}
-                  </p>
+                  </Link>
                 </div>
+                <Link
+                  to={`/users/${user.id}`}
+                  className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-page hover:text-brand"
+                >
+                  <Star className="h-4 w-4" aria-hidden="true" />
+                  Profil &amp; ulasan saya
+                </Link>
                 <Link
                   to="/dashboard"
                   className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-page hover:text-brand"
