@@ -192,20 +192,42 @@ export function useMessages(conversationId) {
     const load = async () => {
       setLoading(true);
       setError("");
-      const { data, error: queryError } = await supabase
-        .from("messages")
-        .select("id, sender_id, body, created_at")
-        .eq("conversation_id", Number(conversationId))
-        .order("created_at", { ascending: true })
-        .limit(200);
+      const [messagesResult, hiddenResult] = await Promise.all([
+        supabase
+          .from("messages")
+          .select("id, sender_id, body, created_at")
+          .eq("conversation_id", Number(conversationId))
+          .order("created_at", { ascending: true })
+          .limit(200),
+        supabase
+          .from("hidden_messages")
+          .select("message_id")
+          .eq("user_id", user.id)
+          .eq("conversation_id", String(conversationId)),
+      ]);
 
       if (ignore) return;
-      if (queryError) {
+      if (messagesResult.error) {
         setError("Gagal memuat pesan.");
         setLoading(false);
         return;
       }
-      setMessages(data ?? []);
+      if (hiddenResult.error) {
+        setError(
+          "Gagal memuat pesan tersembunyi. Pastikan migrasi Supabase sudah diterapkan.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      const hiddenIds = new Set(
+        (hiddenResult.data ?? []).map((hidden) => hidden.message_id),
+      );
+      setMessages(
+        (messagesResult.data ?? []).filter(
+          (message) => !hiddenIds.has(String(message.id)),
+        ),
+      );
       setLoading(false);
       markRead();
     };
@@ -219,6 +241,7 @@ export function useMessages(conversationId) {
           filter: `conversation_id=eq.${conversationId}`,
           event: "INSERT",
         },
+        { table: "hidden_messages", filter: `user_id=eq.${user.id}` },
       ],
       load,
     );
@@ -255,6 +278,22 @@ export function useMessages(conversationId) {
     return { error: deleteError };
   };
 
+  const hide = async (id) => {
+    const { error: hideError } = await supabase
+      .from("hidden_messages")
+      .upsert(
+        {
+          user_id: user.id,
+          message_id: String(id),
+          conversation_id: String(conversationId),
+        },
+        { onConflict: "user_id,message_id", ignoreDuplicates: true },
+      );
+    if (hideError) return { error: hideError };
+    setMessages((prev) => prev.filter((message) => String(message.id) !== String(id)));
+    return { error: null };
+  };
+
   return {
     messages,
     loading,
@@ -262,5 +301,6 @@ export function useMessages(conversationId) {
     retry: () => setAttempt((n) => n + 1),
     send,
     remove,
+    hide,
   };
 }

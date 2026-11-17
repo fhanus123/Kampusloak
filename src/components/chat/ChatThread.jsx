@@ -28,7 +28,7 @@ function ThreadView({ conversationId }) {
     error: convError,
     refetch,
   } = useConversation(conversationId);
-  const { messages, loading, error, retry, send, remove } =
+  const { messages, loading, error, retry, send, remove, hide } =
     useMessages(conversationId);
   const [actionError, setActionError] = useState("");
   const messagesRef = useRef(null);
@@ -58,10 +58,20 @@ function ThreadView({ conversationId }) {
     reset({ body: "" });
   };
 
-  const handleDeleteMessage = async (id) => {
-    if (!window.confirm("Hapus pesan ini?")) return;
-    const { error: deleteError } = await remove(id);
-    if (deleteError) setActionError("Gagal menghapus pesan.");
+  const handleDeleteMessage = async (id, mine) => {
+    const confirmation = mine
+      ? "Hapus pesan ini?"
+      : "Hapus pesan ini hanya dari tampilan Anda? Peserta lain tetap dapat melihatnya.";
+    if (!window.confirm(confirmation)) return;
+    setActionError("");
+    const { error: deleteError } = mine ? await remove(id) : await hide(id);
+    if (deleteError) {
+      setActionError(
+        mine
+          ? "Gagal menghapus pesan."
+          : "Gagal menyembunyikan pesan. Pastikan migrasi Supabase sudah diterapkan.",
+      );
+    }
   };
 
   const handleDeleteConversation = async () => {
@@ -169,15 +179,13 @@ function ThreadView({ conversationId }) {
                   <p
                     className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${mine ? "text-white/70" : "text-ink/50"}`}
                   >
-                    {mine && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteMessage(m.id)}
-                        className="underline opacity-0 group-hover:opacity-100 focus:opacity-100"
-                      >
-                        Hapus
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMessage(m.id, mine)}
+                      className="underline sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                    >
+                      {mine ? "Hapus" : "Hapus untuk saya"}
+                    </button>
                     {formatTime(m.created_at)}
                   </p>
                 </div>
@@ -187,15 +195,24 @@ function ThreadView({ conversationId }) {
         )}
       </div>
 
+      {actionError && (
+        <p
+          role="alert"
+          className="shrink-0 border-t border-ink/10 px-3 py-2 text-xs text-red-600"
+        >
+          {actionError}
+        </p>
+      )}
+
       {canSend ? (
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="shrink-0 border-t border-ink/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
           noValidate
         >
-          {(errors.body || actionError) && (
+          {errors.body && (
             <p role="alert" className="mb-2 text-xs text-red-600">
-              {errors.body?.message ?? actionError}
+              {errors.body.message}
             </p>
           )}
           <div className="flex gap-2">
