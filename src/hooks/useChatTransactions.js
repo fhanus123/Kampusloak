@@ -2,24 +2,28 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from './useAuth'
 
-export function useChatTransaction(listingId, buyerId) {
+export function useChatTransactions(listingId, buyerId) {
   const { user } = useAuth()
-  const [transaction, setTransaction] = useState(null)
-  const [myReview, setMyReview] = useState(null)
+  const [transactions, setTransactions] = useState([])
+  const [reviews, setReviews] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const load = useCallback(async (silent = false) => {
+    if (!listingId || !buyerId) {
+      setLoading(false)
+      return
+    }
     if (!silent) setLoading(true)
     setError('')
 
-    const { data: tx, error: txError } = await supabase
+    const { data: txs, error: txError } = await supabase
       .from('transactions')
-      .select('id, status, price, listing_title, seller_id, buyer_id')
+      .select('id, status, price, listing_title, seller_id, buyer_id, seller_banner_hidden, buyer_banner_hidden, created_at')
       .eq('listing_id', listingId)
       .eq('buyer_id', buyerId)
       .neq('status', 'cancelled')
-      .maybeSingle()
+      .order('created_at', { ascending: false })
 
     if (txError) {
       setError('Gagal memuat status transaksi.')
@@ -27,24 +31,25 @@ export function useChatTransaction(listingId, buyerId) {
       return
     }
 
-    let review = null
-    if (tx?.status === 'completed') {
-      const { data } = await supabase
+    const completedIds = (txs ?? []).filter((t) => t.status === 'completed').map((t) => t.id)
+    let map = {}
+    if (completedIds.length > 0) {
+      const { data: revs } = await supabase
         .from('reviews')
-        .select('id, rating, comment')
-        .eq('transaction_id', tx.id)
+        .select('id, transaction_id, rating, comment')
+        .in('transaction_id', completedIds)
         .eq('reviewer_id', user.id)
-        .maybeSingle()
-      review = data
+      map = Object.fromEntries((revs ?? []).map((r) => [r.transaction_id, r]))
     }
 
-    setTransaction(tx)
-    setMyReview(review)
+    setTransactions(txs ?? [])
+    setReviews(map)
     setLoading(false)
   }, [listingId, buyerId, user.id])
 
   useEffect(() => {
     const timer = window.setTimeout(() => load(), 0)
+    if (!listingId || !buyerId) return () => window.clearTimeout(timer)
     const channel = supabase
       .channel(`tx:${listingId}:${buyerId}`)
       .on(
@@ -59,5 +64,7 @@ export function useChatTransaction(listingId, buyerId) {
     }
   }, [load, listingId, buyerId])
 
-  return { transaction, myReview, loading, error, refetch: load }
+  const hasPending = transactions.some((t) => t.status === 'pending')
+
+  return { transactions, reviews, hasPending, loading, error, refetch: load }
 }
