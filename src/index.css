@@ -29,6 +29,10 @@
   :disabled, [aria-disabled="true"] {
     cursor: not-allowed;
   }
+
+  textarea {
+    resize: none;
+  }
 }
 
 @layer components {

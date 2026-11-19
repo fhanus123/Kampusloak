@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
+import NonNegativeNumberInput from '../ui/NonNegativeNumberInput'
 import { CONDITION_LABELS } from '../../lib/format'
 
 export default function FilterSidebar({
@@ -90,9 +91,23 @@ export default function FilterSidebar({
       <form onSubmit={applyPrice}>
         <h3 className="mb-2 font-bold">Harga (Rp)</h3>
         <div className="flex items-center gap-2">
-          <input type="number" min="0" inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)} placeholder="Min" aria-label="Harga minimum" className="w-full rounded-lg border border-ink/20 px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand" />
+          <NonNegativeNumberInput
+            inputMode="numeric"
+            value={min}
+            onChange={(e) => setMin(e.target.value)}
+            placeholder="Min"
+            aria-label="Harga minimum"
+            className="w-full rounded-lg border border-ink/20 px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand"
+          />
           <span>-</span>
-          <input type="number" min="0" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)} placeholder="Maks" aria-label="Harga maksimum" className="w-full rounded-lg border border-ink/20 px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand" />
+          <NonNegativeNumberInput
+            inputMode="numeric"
+            value={max}
+            onChange={(e) => setMax(e.target.value)}
+            placeholder="Maks"
+            aria-label="Harga maksimum"
+            className="w-full rounded-lg border border-ink/20 px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand"
+          />
         </div>
         <Button type="submit" variant="outline" className="mt-2 w-full">Terapkan</Button>
       </form>

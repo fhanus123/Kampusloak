@@ -3,6 +3,7 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { SlidersHorizontal } from 'lucide-react'
 import FilterSidebar from '../components/listings/FilterSidebar'
 import ListingGrid from '../components/listings/ListingGrid'
+import SelectMenu from '../components/ui/SelectMenu'
 import { useSearchListings } from '../hooks/useSearchListings'
 
 export default function Search() {
@@ -16,9 +17,9 @@ export default function Search() {
   const title = q ? `Hasil untuk "${q}"` : categoryName ?? 'Semua barang'
   const sort = params.get('sort') ?? 'newest'
 
-  const handleSort = (e) => {
+  const handleSort = (value) => {
     const next = new URLSearchParams(params)
-    e.target.value === 'newest' ? next.delete('sort') : next.set('sort', e.target.value)
+    value === 'newest' ? next.delete('sort') : next.set('sort', value)
     setParams(next)
   }
 
@@ -51,16 +52,17 @@ export default function Search() {
             >
               <SlidersHorizontal className="h-4 w-4" /> Filter
             </button>
-            <select
+            <SelectMenu
               value={sort}
               onChange={handleSort}
-              aria-label="Urutkan"
-              className="rounded-lg border border-ink/20 bg-white px-3 py-2 text-sm outline-none"
-            >
-              <option value="newest">Terbaru</option>
-              <option value="price_asc">Harga terendah</option>
-              <option value="price_desc">Harga tertinggi</option>
-            </select>
+              ariaLabel="Urutkan"
+              className="min-w-[10rem]"
+              options={[
+                { value: 'newest', label: 'Terbaru' },
+                { value: 'price_asc', label: 'Harga terendah' },
+                { value: 'price_desc', label: 'Harga tertinggi' },
+              ]}
+            />
           </div>
         </div>
 

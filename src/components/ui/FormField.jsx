@@ -1,10 +1,15 @@
+import NonNegativeNumberInput from './NonNegativeNumberInput'
+
 export default function FormField({ label, error, id, ...inputProps }) {
+  const Input =
+    inputProps.type === 'number' ? NonNegativeNumberInput : 'input'
+
   return (
     <div>
       <label htmlFor={id} className="mb-1 block text-sm font-semibold">
         {label}
       </label>
-      <input
+      <Input
         id={id}
         className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand ${
           error ? 'border-red-500' : 'border-ink/20'
