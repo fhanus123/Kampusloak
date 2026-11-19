@@ -81,7 +81,10 @@ export default function TransactionCard({ tx, review, otherName, onChanged }) {
           <p className="font-semibold">Ulasan Anda untuk {otherName}</p>
           <StarRating value={review.rating} size="h-4 w-4" />
           {review.comment && <p className="mt-1 text-xs">{review.comment}</p>}
-          <Link to={`/users/${otherId}`} className="mt-1 inline-block text-xs font-semibold text-nav-sub underline">
+          <Link
+            to={`/users/${otherId}`}
+            className="link-action mt-1 inline-block text-xs"
+          >
             Lihat profil {otherName}
           </Link>
         </div>

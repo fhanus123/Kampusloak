@@ -94,7 +94,7 @@ export default function VerificationCard({
               href={proofUrl}
               target="_blank"
               rel="noreferrer"
-              className="font-semibold text-nav-sub underline"
+              className="link-action"
             >
               Buka PDF bukti
             </a>

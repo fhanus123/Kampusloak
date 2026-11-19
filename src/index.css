@@ -31,6 +31,48 @@
   }
 }
 
+@layer components {
+  .link-action {
+    color: var(--color-nav-sub);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  .link-action:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .link-action:active {
+    color: var(--color-nav-sub);
+  }
+
+  .link-action:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .link-action {
+      transition: none;
+    }
+  }
+}
+
 body {
   @apply bg-page text-ink;
+}
+
+@keyframes category-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
