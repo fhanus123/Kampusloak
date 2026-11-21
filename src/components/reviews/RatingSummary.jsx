@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import StarRating from './StarRating'
@@ -65,7 +66,7 @@ export default function RatingSummary() {
   return (
     <Link
       to={`/users/${user.id}`}
-      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white p-4 shadow-sm hover:shadow-md"
+      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white p-4 shadow-sm hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <div>
         <p className="text-sm font-semibold text-ink/70">Reputasi Anda</p>
@@ -81,8 +82,9 @@ export default function RatingSummary() {
           </p>
         )}
       </div>
-      <span className="text-sm font-semibold text-nav-sub underline">
+      <span className="link-action inline-flex items-center gap-1 text-sm">
         Lihat semua ulasan
+        <ArrowRight aria-hidden="true" className="h-4 w-4" />
       </span>
     </Link>
   )

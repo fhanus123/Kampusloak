@@ -40,7 +40,7 @@ export default function ResetPassword() {
         </p>
         <Link
           to="/forgot-password"
-          className="mt-4 inline-block font-semibold text-nav-sub underline"
+          className="link-action mt-4 inline-block"
         >
           Minta tautan baru
         </Link>

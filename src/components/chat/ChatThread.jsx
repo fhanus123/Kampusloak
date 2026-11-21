@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, Handshake, Send, Trash2 } from "lucide-react";
 import { messageSchema } from "../../schemas/message";
 import { supabase } from "../../lib/supabaseClient";
 import { formatRupiah, formatTime } from "../../lib/format";
 import { useAuth } from "../../hooks/useAuth";
 import { useConversation, useMessages } from "../../hooks/useChat";
-import TransactionPanel from "./TransactionPanel";
+import { useChatTransactions } from "../../hooks/useChatTransactions";
+import TransactionCard from "./TransactionCard";
+import SellForm from "./SellForm";
 import Spinner from "../ui/Spinner";
 import ErrorState from "../ui/ErrorState";
 import EmptyState from "../ui/EmptyState";
@@ -31,6 +33,11 @@ function ThreadView({ conversationId }) {
   const { messages, loading, error, retry, send, remove, hide } =
     useMessages(conversationId);
   const [actionError, setActionError] = useState("");
+  const [sellOpen, setSellOpen] = useState(false);
+  const txState = useChatTransactions(
+    conversation?.listings?.id,
+    conversation?.buyer_id,
+  );
   const messagesRef = useRef(null);
 
   const {
@@ -105,6 +112,10 @@ function ThreadView({ conversationId }) {
 
   const { listings: listing, otherName } = conversation;
   const canSend = listing?.status === "approved";
+  const canSell =
+    listing?.status === "approved" &&
+    user.id === conversation.seller_id &&
+    !txState.hasPending;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white shadow-sm lg:rounded-xl">
@@ -139,13 +150,21 @@ function ThreadView({ conversationId }) {
         </button>
       </header>
 
-      {listing && (
-        <TransactionPanel
-          listing={listing}
-          buyerId={conversation.buyer_id}
-          sellerId={conversation.seller_id}
-          otherName={otherName}
-        />
+      {txState.transactions.length > 0 && (
+        <div className="max-h-64 space-y-2 overflow-y-auto border-b border-ink/10 p-3">
+          {txState.transactions.map((tx) => (
+            <TransactionCard
+              key={tx.id}
+              tx={tx}
+              review={txState.reviews[tx.id]}
+              otherName={otherName}
+              onChanged={txState.refetch}
+            />
+          ))}
+        </div>
+      )}
+      {txState.error && (
+        <p className="bg-gold/30 p-2 text-center text-xs">{txState.error}</p>
       )}
 
       <div
@@ -195,7 +214,7 @@ function ThreadView({ conversationId }) {
         )}
       </div>
 
-      {actionError && (
+      {actionError && !canSend && (
         <p
           role="alert"
           className="shrink-0 border-t border-ink/10 px-3 py-2 text-xs text-red-600"
@@ -205,34 +224,60 @@ function ThreadView({ conversationId }) {
       )}
 
       {canSend ? (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="shrink-0 border-t border-ink/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          noValidate
-        >
-          {errors.body && (
-            <p role="alert" className="mb-2 text-xs text-red-600">
-              {errors.body.message}
-            </p>
-          )}
-          <div className="flex gap-2">
-            <input
-              {...register("body")}
-              autoComplete="off"
-              placeholder="Tulis pesan atau tawaran harga..."
-              aria-label="Pesan"
-              className="min-w-0 flex-1 rounded-lg border border-ink/20 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand"
+        <>
+          {sellOpen && canSell && (
+            <SellForm
+              listing={listing}
+              buyerId={conversation.buyer_id}
+              otherName={otherName}
+              onDone={() => {
+                setSellOpen(false);
+                txState.refetch(true);
+              }}
+              onCancel={() => setSellOpen(false)}
             />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              aria-label="Kirim"
-              className="shrink-0 rounded-lg bg-cta px-4 text-ink hover:brightness-95 disabled:opacity-60"
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          </div>
-        </form>
+          )}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="shrink-0 border-t border-ink/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+            noValidate
+          >
+            {(errors.body || actionError) && (
+              <p role="alert" className="mb-2 text-xs text-red-600">
+                {errors.body?.message ?? actionError}
+              </p>
+            )}
+            <div className="flex gap-2">
+              {canSell && (
+                <button
+                  type="button"
+                  onClick={() => setSellOpen((v) => !v)}
+                  aria-label="Catat kesepakatan"
+                  aria-expanded={sellOpen}
+                  title="Catat kesepakatan"
+                  className="min-h-11 min-w-11 shrink-0 rounded-lg border border-ink/20 px-3 text-nav-sub hover:bg-mint/30 active:bg-mint/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                >
+                  <Handshake className="h-5 w-5" aria-hidden="true" />
+                </button>
+              )}
+              <input
+                {...register("body")}
+                autoComplete="off"
+                placeholder="Tulis pesan atau tawaran harga..."
+                aria-label="Pesan"
+                className="min-w-0 flex-1 rounded-lg border border-ink/20 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand"
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                aria-label="Kirim"
+                className="shrink-0 rounded-lg bg-cta px-4 text-ink hover:brightness-95 disabled:opacity-60"
+              >
+                <Send className="h-5 w-5" />
+              </button>
+            </div>
+          </form>
+        </>
       ) : (
         <p className="shrink-0 border-t border-ink/10 bg-gold/30 p-3 text-center text-sm">
           Barang ini sudah terjual atau tidak lagi tayang, jadi percakapan

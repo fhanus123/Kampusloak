@@ -36,7 +36,7 @@ export default function SellListing() {
           </p>
           <Link
             to="/verification"
-            className="mt-2 inline-block font-semibold underline"
+            className="link-action mt-2 inline-block"
           >
             Verifikasi sekarang
           </Link>

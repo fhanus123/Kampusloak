@@ -8,6 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useMyListings } from "../hooks/useMyListings";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
+import NonNegativeNumberInput from "../components/ui/NonNegativeNumberInput";
 import Spinner from "../components/ui/Spinner";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
@@ -183,9 +184,8 @@ export default function Dashboard() {
                         className="grid min-w-0 gap-1 text-xs font-semibold"
                       >
                         Jumlah terjual
-                        <input
+                        <NonNegativeNumberInput
                           id={`sold-quantity-${item.id}`}
-                          type="number"
                           inputMode="numeric"
                           min="1"
                           max={item.quantity}

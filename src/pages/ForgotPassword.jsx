@@ -39,7 +39,7 @@ export default function ForgotPassword() {
         </p>
         <Link
           to="/login"
-          className="mt-4 inline-block font-semibold text-nav-sub underline"
+          className="link-action mt-4 inline-block"
         >
           Kembali ke halaman masuk
         </Link>
@@ -80,7 +80,7 @@ export default function ForgotPassword() {
       </form>
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/login" className="font-semibold text-nav-sub underline">
+        <Link to="/login" className="link-action">
           Kembali ke masuk
         </Link>
       </p>

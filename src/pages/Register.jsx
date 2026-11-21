@@ -49,7 +49,7 @@ export default function Register() {
         </p>
         <Link
           to="/login"
-          className="mt-4 inline-block font-semibold text-nav-sub underline"
+          className="link-action mt-4 inline-block"
         >
           Ke halaman masuk
         </Link>

@@ -21,7 +21,10 @@ export default function VerificationBanner() {
     <div className="shrink-0 bg-gold text-sm text-ink">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2">
         <span>{text}</span>
-        <Link to="/verification" className="font-semibold underline">
+        <Link
+          to="/verification"
+          className="link-action text-ink hover:text-ink"
+        >
           {needsProof ? "Verifikasi sekarang" : "Lihat status"}
         </Link>
       </div>

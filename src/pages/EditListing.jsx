@@ -47,7 +47,7 @@ export default function EditListing() {
       <ListingForm listing={listing} />
       <Link
         to="/dashboard"
-        className="mt-4 inline-block text-sm font-semibold text-nav-sub underline"
+        className="link-action mt-4 inline-block text-sm"
       >
         Batal
       </Link>

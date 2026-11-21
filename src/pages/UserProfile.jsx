@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck } from 'lucide-react'
+import { ArrowRight, BadgeCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useUserProfile } from '../hooks/useUserProfile'
 import ListingGrid from '../components/listings/ListingGrid'
@@ -50,12 +50,18 @@ function ProfileView({ userId }) {
         <div className="min-w-0 flex-1 space-y-1">
           <h1 className="truncate text-2xl font-bold">{name}</h1>
           {isMe && (
-            <p className="text-xs font-semibold text-nav-sub">
-              Ini profil Anda ·{' '}
-              <Link to="/dashboard" className="underline">
+            <div className="flex flex-col items-start gap-2 pt-1 sm:flex-row sm:items-center">
+              <span className="text-xs font-medium text-ink/75">
+                Ini profil Anda
+              </span>
+              <Link
+                to="/dashboard"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-nav-sub bg-nav-sub/5 px-3 py-2 text-sm font-semibold text-nav-sub transition-colors hover:bg-nav-sub/10 hover:text-ink active:bg-nav-sub/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand motion-reduce:transition-none"
+              >
                 Kelola barang
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
-            </p>
+            </div>
           )}
           {reviewCount > 0 ? (
             <div className="flex items-center gap-2">
@@ -115,7 +121,9 @@ function ProfileView({ userId }) {
         />
       </section>
 
-      <Link to="/" className="inline-block text-sm font-semibold text-nav-sub underline">Kembali ke beranda</Link>
+      <Link to="/" className="link-action inline-block text-sm">
+        Kembali ke beranda
+      </Link>
     </div>
   )
 }

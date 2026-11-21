@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { listingSchema, IMAGE_RULES } from "../../schemas/listing";
@@ -10,6 +10,7 @@ import { CONDITION_LABELS } from "../../lib/format";
 import { useAuth } from "../../hooks/useAuth";
 import Button from "../ui/Button";
 import FormField from "../ui/FormField";
+import SelectMenu from "../ui/SelectMenu";
 
 const inputClass =
   "w-full rounded-lg border border-ink/20 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand";
@@ -35,6 +36,7 @@ export default function ListingForm({ listing }) {
   );
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -136,23 +138,31 @@ export default function ListingForm({ listing }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label
-            htmlFor="categoryId"
+            id="categoryId-label"
             className="mb-1 block text-sm font-semibold"
           >
             Kategori
           </label>
-          <select
-            id="categoryId"
-            className={inputClass}
-            {...register("categoryId")}
-          >
-            <option value="">Pilih kategori</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="categoryId"
+            control={control}
+            render={({ field }) => (
+              <SelectMenu
+                labelId="categoryId-label"
+                placeholder="Pilih kategori"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                options={[
+                  { value: "", label: "Pilih kategori" },
+                  ...categories.map((category) => ({
+                    value: String(category.id),
+                    label: category.name,
+                  })),
+                ]}
+              />
+            )}
+          />
           {errors.categoryId && (
             <p className="mt-1 text-xs text-red-600">
               {errors.categoryId.message}
@@ -162,22 +172,26 @@ export default function ListingForm({ listing }) {
 
         <div>
           <label
-            htmlFor="condition"
+            id="condition-label"
             className="mb-1 block text-sm font-semibold"
           >
             Kondisi
           </label>
-          <select
-            id="condition"
-            className={inputClass}
-            {...register("condition")}
-          >
-            {Object.entries(CONDITION_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="condition"
+            control={control}
+            render={({ field }) => (
+              <SelectMenu
+                labelId="condition-label"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                options={Object.entries(CONDITION_LABELS).map(
+                  ([value, label]) => ({ value, label }),
+                )}
+              />
+            )}
+          />
         </div>
       </div>
 

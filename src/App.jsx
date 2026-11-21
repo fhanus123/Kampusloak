@@ -45,7 +45,6 @@ export default function App() {
 
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Rute baru */}
         <Route path="/search" element={<Search />} />
         <Route path="/listings/:id" element={<ListingDetail />} />
         <Route path="/users/:id" element={<UserProfile />} />

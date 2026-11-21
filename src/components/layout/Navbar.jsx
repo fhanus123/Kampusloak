@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -6,6 +6,7 @@ import {
   Heart,
   MessageCircle,
   ChevronDown,
+  Check,
   LayoutDashboard,
   ShieldCheck,
   LogOut,
@@ -21,8 +22,30 @@ export default function Navbar({ categories }) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const category = searchParams.get("category") ?? "";
+  const routeCategory = searchParams.get("category") ?? "";
   const userMenuRef = useRef(null);
+  const navbarRef = useRef(null);
+  const categoryTriggerRef = useRef(null);
+  const categoryMenuRef = useRef(null);
+  const categoryOptionRefs = useRef([]);
+  const searchInputRef = useRef(null);
+  const [categoryFocus, setCategoryFocus] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [categoryMenuIndex, setCategoryMenuIndex] = useState(0);
+  const [pendingCategory, setPendingCategory] = useState(null);
+  const selectedCategory =
+    pendingCategory?.locationKey === location.key
+      ? pendingCategory.value
+      : routeCategory;
+  const categoryOptions = [
+    { slug: "", name: "Semua" },
+    ...categories.map((item) => ({ slug: item.slug, name: item.name })),
+  ];
+  const selectedCategoryIndex = Math.max(
+    0,
+    categoryOptions.findIndex((item) => item.slug === selectedCategory),
+  );
+  const selectedCategoryName = categoryOptions[selectedCategoryIndex].name;
 
   useEffect(() => {
     const closeOutside = (event) => {
@@ -47,31 +70,112 @@ export default function Navbar({ categories }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!categoryFocus) return;
+
+    const closeOutside = (event) => {
+      if (!navbarRef.current?.contains(event.target)) setCategoryFocus(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setCategoryFocus(false);
+        categoryTriggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("focusin", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("focusin", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [categoryFocus]);
+
+  useEffect(() => {
+    if (!categoryMenuOpen) return;
+
+    categoryOptionRefs.current[categoryMenuIndex]?.focus();
+
+    const closeOutside = (event) => {
+      if (
+        !categoryTriggerRef.current?.contains(event.target) &&
+        !categoryMenuRef.current?.contains(event.target)
+      ) {
+        setCategoryMenuOpen(false);
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setCategoryMenuOpen(false);
+        categoryTriggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("focusin", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("focusin", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [categoryMenuOpen, categoryMenuIndex]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    const query = new FormData(e.currentTarget).get("q")?.toString().trim();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get("q")?.toString().trim();
+    const selectedCategory = formData.get("category")?.toString() ?? "";
     if (query) params.set("q", query);
-    if (category) params.set("category", category);
+    if (selectedCategory) params.set("category", selectedCategory);
+    setCategoryFocus(false);
+    setCategoryMenuOpen(false);
     navigate(`/search?${params.toString()}`);
   };
 
-  const handleCategoryChange = (e) => {
-    const selected = e.target.value;
-    const params = new URLSearchParams(
-      location.pathname === "/search" ? location.search : "",
-    );
-    const query = new FormData(e.currentTarget.form).get("q")?.toString().trim();
-    if (query) params.set("q", query);
-    else params.delete("q");
-    if (selected) params.set("category", selected);
-    else params.delete("category");
+  const openCategoryMenu = () => {
+    setCategoryMenuIndex(selectedCategoryIndex);
+    setCategoryMenuOpen(true);
+  };
 
-    navigate(`/search?${params.toString()}`);
+  const handleCategoryTriggerKeyDown = (event) => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    openCategoryMenu();
+  };
+
+  const handleCategoryOptionKeyDown = (event, index) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      setCategoryMenuIndex(
+        (index + direction + categoryOptions.length) % categoryOptions.length,
+      );
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      setCategoryMenuIndex(event.key === "Home" ? 0 : categoryOptions.length - 1);
+    }
+  };
+
+  const handleCategorySelect = (slug) => {
+    setPendingCategory({ locationKey: location.key, value: slug });
+    setCategoryMenuOpen(false);
+    setCategoryFocus(true);
+    searchInputRef.current?.focus();
   };
 
   return (
-    <header className="shrink-0 bg-nav text-white">
+    <>
+      {categoryFocus && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-40 bg-black/15"
+        />
+      )}
+      <header ref={navbarRef} className="relative z-50 shrink-0 bg-nav text-white">
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-3 sm:gap-x-4 sm:px-4 md:grid-cols-[minmax(150px,0.55fr)_minmax(280px,2fr)_auto]">
         <Link
           to="/"
@@ -80,38 +184,97 @@ export default function Navbar({ categories }) {
           Kampus<span className="text-cta">Loak</span>
         </Link>
 
-        <form
-          key={`${location.pathname}${location.search}`}
-          onSubmit={handleSearch}
-          className="col-span-2 order-3 flex w-full overflow-hidden rounded-lg bg-white md:col-span-1 md:order-0"
-        >
-          <select
-            value={category}
-            onChange={handleCategoryChange}
-            aria-label="Kategori"
-            className="max-w-36 border-r border-ink/10 bg-page px-2 text-sm text-ink outline-none"
+        <div className="relative col-span-2 order-3 w-full md:col-span-1 md:order-0">
+          <form
+            key={`${location.pathname}${location.search}`}
+            onSubmit={handleSearch}
+            className="flex w-full overflow-hidden rounded-lg bg-white"
           >
-            <option value="">Semua</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <input
-            name="q"
-            defaultValue={searchParams.get("q") ?? ""}
-            placeholder="Cari buku, laptop, perabot kos..."
-            className="min-w-0 flex-1 px-3 py-2.5 text-sm text-ink outline-none"
-          />
-          <button
-            type="submit"
-            aria-label="Cari"
-            className="bg-cta px-4 text-ink hover:brightness-95"
-          >
-            <Search className="h-5 w-5" />
-          </button>
-        </form>
+            <input type="hidden" name="category" value={selectedCategory} />
+            <button
+              ref={categoryTriggerRef}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={categoryMenuOpen}
+              aria-controls={
+                categoryMenuOpen ? "navbar-category-menu" : undefined
+              }
+              onClick={() =>
+                categoryMenuOpen
+                  ? setCategoryMenuOpen(false)
+                  : openCategoryMenu()
+              }
+              onKeyDown={handleCategoryTriggerKeyDown}
+              className="flex max-w-36 min-w-[6.5rem] shrink-0 items-center justify-between gap-1 border-r border-ink/10 bg-page px-2 py-2.5 text-left text-sm text-ink transition-colors duration-150 hover:bg-brand/10 active:bg-brand/15 focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand motion-reduce:transition-none"
+            >
+              <span className="truncate">{selectedCategoryName}</span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`h-4 w-4 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+                  categoryMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            <input
+              ref={searchInputRef}
+              name="q"
+              defaultValue={searchParams.get("q") ?? ""}
+              placeholder="Cari buku, laptop, perabot kos..."
+              className={`min-w-0 flex-1 px-3 py-2.5 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset ${
+                categoryFocus ? "ring-2 ring-brand ring-inset" : ""
+              }`}
+            />
+            <button
+              type="submit"
+              aria-label="Cari"
+              className="bg-cta px-4 text-ink hover:brightness-95"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          </form>
+          {categoryMenuOpen && (
+            <div
+              ref={categoryMenuRef}
+              id="navbar-category-menu"
+              role="menu"
+              aria-label="Pilih kategori"
+              className="absolute left-0 top-full z-[60] mt-2 max-h-72 min-w-56 overflow-y-auto rounded-xl border border-ink/15 bg-white p-1.5 text-ink shadow-xl animate-[category-menu-in_140ms_ease-out] motion-reduce:animate-none"
+            >
+              {categoryOptions.map((option, index) => {
+                const isSelected = option.slug === selectedCategory;
+                return (
+                  <button
+                    key={option.slug || "all"}
+                    ref={(element) => {
+                      categoryOptionRefs.current[index] = element;
+                    }}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={isSelected}
+                    tabIndex={categoryMenuIndex === index ? 0 : -1}
+                    onClick={() => handleCategorySelect(option.slug)}
+                    onKeyDown={(event) =>
+                      handleCategoryOptionKeyDown(event, index)
+                    }
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-page hover:text-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-[-2px] active:bg-brand/15 motion-reduce:transition-none ${
+                      isSelected
+                        ? "bg-nav-sub/10 font-semibold text-nav-sub hover:bg-nav-sub/15"
+                        : ""
+                    }`}
+                  >
+                    {option.name}
+                    {isSelected && (
+                      <Check
+                        aria-hidden="true"
+                        className="h-4 w-4 shrink-0"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <nav className="justify-self-end flex items-center gap-1 text-sm sm:gap-3">
           <Link
@@ -215,6 +378,7 @@ export default function Navbar({ categories }) {
           )}
         </nav>
       </div>
-    </header>
+      </header>
+    </>
   );
 }
