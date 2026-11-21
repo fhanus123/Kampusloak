@@ -6,10 +6,9 @@ Marketplace barang bekas khusus mahasiswa dan alumni UNSRI, dengan penjual terve
 
 ## Masalah dan solusi
 
-**Masalah.** Mahasiswa UNSRI biasa jual-beli barang bekas (buku, elektronik, perabot kos) lewat grup chat dan marketplace umum. Di sana penipuan sulit dilacak, penjual tidak terbukti sesama mahasiswa, dan platform besar membingungkan karena penuh promo.
+**Masalah.** membeli barang bekas sering kali memiliki resiko dikarena ruang linkup yang sangat luas ( susah untuk dimonitoring ), dan rawan sekali penipuan atau bahkan berbagai alasan yang merusak transaksi barang tersebut.
 
-**Solusi.** KampusLoak membatasi penjual pada mahasiswa dan alumni yang diverifikasi admin lewat KTM, menyediakan chat nego, ulasan dua arah berdasarkan transaksi, dan laporan penipuan. Antarmuka dibuat sederhana, terinspirasi Amazon, agar beban kognitif rendah.
-
+**Solusi.** KampusLoak membatasi penjual pada mahasiswa dan alumni yang diverifikasi admin lewat KTM, menyediakan chat nego, ulasan dua arah berdasarkan transaksi, dan laporan penipuan. Antarmuka dibuat sederhana.
 ## Fitur
 
 **Pengguna**
@@ -98,18 +97,26 @@ where email = 'EMAIL-ANDA';
 6. Keduanya saling memberi ulasan, tampil di profil
 
 ## Skema database
+```
+auth.users
+   │ 1:1
+   └── profiles
+         ├── listings ───────── categories
+         │      ├── favorites
+         │      ├── reports
+         │      ├── conversations
+         │      └── transactions
+         │
+         ├── conversations (sebagai buyer atau seller)
+         │      └── messages
+         │
+         ├── notifications
+         ├── transactions (sebagai buyer atau seller)
+         └── reviews (sebagai reviewer atau penerima ulasan)
 
-| Tabel | Fungsi |
-|---|---|
-| profiles | Data pengguna, role, status verifikasi (1:1 dengan auth.users) |
-| categories | Kategori barang |
-| listings | Barang dijual |
-| conversations, messages | Chat nego |
-| transactions | Catatan kesepakatan dua pihak |
-| reviews | Ulasan antar pengguna |
-| reports | Laporan penipuan |
-| notifications | Notifikasi pengguna |
-| favorites | Barang tersimpan |
+auth.users
+   └── hidden_messages
+```
 
 Relasi: `profiles` 1:N `listings`, `listings` 1:N `conversations`, `conversations` 1:N `messages`, `listings` 1:N `transactions`, `transactions` 1:N `reviews`, `categories` 1:N `listings`.
 
@@ -127,8 +134,6 @@ DDL lengkap: [`supabase/schema.sql`](supabase/schema.sql). Penyimpanan file: buc
 
 - Nomor HP hanya divalidasi formatnya (OTP WhatsApp direncanakan)
 - Transaksi COD tidak bisa dibuktikan sistem, jadi dilindungi konfirmasi dua pihak dan moderasi admin
-- Email bawaan Supabase punya batas kirim, SMTP sendiri direncanakan
+- Email bawaan Supabase punya batas kirim, SMTP sendiri direncanaka ( jika diinginkan )
+- Celah bombing review masih ada ( karena sistem transaksi masih terpaku COD )
 
-## Pembuat
-
-NAMA ANDA, NIM, Final Project Web Programming HMIF UNSRI 2026
